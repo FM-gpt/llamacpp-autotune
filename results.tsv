@@ -5,3 +5,7 @@ config_id	tg_tok_s	pp_tok_s	vram_gb	ppl	status	description
 7a73e8b	7.70	628.08	9.8	-	discard	nkvo=1 (KV off GPU) — -74% tg, PCIe round-trips per step
 2455054	27.91	867.56	10.1	-	discard	poll=0 — tg tie within drift; pp +4.5% (not the objective)
 8f3f2d1	27.91	809.02	10.1	-	discard	threads 8->16 — tg tie within drift (neutral when fully offloaded)
+0f76ce9	30.03	-	10.3	-	keep	PHASE2 server no-spec baseline (clock 1811MHz; server path, short prompt)
+ee2fb7c	32.17	-	11.2	-	keep	spec draft 0.5B n_max=3 — +7% (51% accept); VRAM 11.2 over budget
+d2c5e86	37.32	-	11.2	-	keep	spec draft 0.5B n_max=8 — +24% over no-spec (30% accept, clock~1890), reproducible; BEST so far; VRAM 11.2 over 11GB budget
+76369ce	23.43	-	11.2	-	discard	spec n_max=16 — counterproductive (-22%): draft too long, rejected tokens waste compute

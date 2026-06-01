@@ -98,34 +98,48 @@ def build_bench_cmd(cfg, reps=REPS):
     ]
 
 
-def gpu_used_mib():
-    """Single nvidia-smi sample of used VRAM in MiB, or None if unavailable."""
+def gpu_sample():
+    """(used_mib, sm_clock_mhz), or (None, None) if nvidia-smi is unavailable."""
     if not shutil.which("nvidia-smi"):
-        return None
+        return None, None
     try:
         out = subprocess.check_output(
-            ["nvidia-smi", "--query-gpu=memory.used",
+            ["nvidia-smi", "--query-gpu=memory.used,clocks.sm",
              "--format=csv,noheader,nounits"],
             text=True, stderr=subprocess.DEVNULL, timeout=10)
-        return int(out.strip().splitlines()[0])
+        a, b = out.strip().splitlines()[0].split(",")
+        return int(a), int(b)
     except Exception:
-        return None
+        return None, None
+
+
+def gpu_used_mib():
+    return gpu_sample()[0]
 
 
 class VramSampler(threading.Thread):
-    """Polls nvidia-smi while the benchmark runs; records the peak used MiB."""
+    """Polls nvidia-smi while a run is in flight; records peak VRAM and the SM
+    clock trace. The mean clock is a throttle flag: if it drifts run-to-run, the
+    tok/s numbers are not comparable (power/thermal capping)."""
     def __init__(self, interval=0.15):
         super().__init__(daemon=True)
         self.interval = interval
         self.peak = 0
+        self.clocks = []
         self._stop = threading.Event()
 
     def run(self):
         while not self._stop.is_set():
-            v = gpu_used_mib()
+            v, c = gpu_sample()
             if v is not None and v > self.peak:
                 self.peak = v
+            if c is not None:
+                self.clocks.append(c)
             time.sleep(self.interval)
+
+    @property
+    def mean_clock(self):
+        return round(sum(self.clocks) / len(self.clocks)) if self.clocks else None
 
     def stop(self):
         self._stop.set()
@@ -147,7 +161,7 @@ def run_bench(cfg):
         raise SystemExit(f"llama-bench failed (exit {proc.returncode}). "
                          f"Likely an invalid knob combination - treat as a crash.")
     results = json.loads(proc.stdout)
-    return results, sampler.peak, idle
+    return results, sampler.peak, idle, sampler.mean_clock
 
 
 def pick_rows(results):
@@ -215,7 +229,7 @@ def main():
                          "poll", "ctk", "ctv", "split_mode", "mmap", "nkvo"])
 
     print(f"[bench] config {cid}: {knob_str}", file=sys.stderr)
-    results, peak_mib, idle_mib = run_bench(cfg)
+    results, peak_mib, idle_mib, sm_clock = run_bench(cfg)
     pp, tg = pick_rows(results)
 
     # Quality gate: only when a lossy knob deviates from baseline (or forced).
@@ -242,6 +256,7 @@ def main():
           + (f"  (delta {delta_mib} over idle)" if delta_mib is not None else ""))
     print(f"peak_vram_gb:     {peak_gb:.2f}")
     print(f"within_budget:    {'yes' if within else 'NO - over %.1f GB' % VRAM_BUDGET_GB}")
+    print(f"avg_sm_clock_mhz: {sm_clock}  (watch for drift - throttle = uncomparable)")
     print(f"perplexity:       {ppl_note}")
     print(f"workload:         p={N_PROMPT} n={N_GEN} d={N_DEPTH} reps={args.reps}")
     print("---")
