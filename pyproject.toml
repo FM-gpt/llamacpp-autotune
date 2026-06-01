@@ -1,0 +1,10 @@
+[project]
+name = "llamacpp-autotune"
+version = "0.1.0"
+description = "Autoresearch-style autonomous tuner for llama.cpp runtime knobs"
+requires-python = ">=3.10"
+# bench.py is intentionally pure standard library - no dependencies.
+dependencies = []
+
+[tool.uv]
+package = false

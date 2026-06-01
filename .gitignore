@@ -1,0 +1,11 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# data corpora (fetched locally, large)
+data/
+
+# scratch
+run.log
+*.tmp
