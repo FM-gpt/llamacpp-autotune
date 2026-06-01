@@ -15,6 +15,8 @@ fixed constants in it — that is the ground-truth harness.
 - **Quality gate:** when a lossy knob changes (`ctk`/`ctv` ≠ f16), `bench.py` runs
   perplexity automatically. Keep the change only if `perplexity` is within **+1%**
   of the f16 baseline ppl. Pure-speed knobs are bit-exact — no ppl needed.
+  **f16 reference ppl = 4.5807 → gate threshold = 4.626** (Qwen2.5-14B, ctx 2048,
+  20 chunks). Re-measure the reference if the model or PPL settings change.
 
 `prompt_tok_s` (pp) is reported too; it's a secondary signal, not the objective.
 

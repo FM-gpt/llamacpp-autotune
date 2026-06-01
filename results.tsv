@@ -1,2 +1,7 @@
 config_id	tg_tok_s	pp_tok_s	vram_gb	ppl	status	description
-4f9a41c	29.17	830.29	10.1	-	keep	baseline Qwen2.5-14B Q4_K_M @ d=2048 (ngl=99 fa=on b=2048 ub=512 t=8 poll=50 f16 kv)
+4f9a41c	29.17	830.29	10.1	4.5807	keep	baseline Qwen2.5-14B Q4_K_M @ d=2048 (ngl=99 fa=on b=2048 ub=512 t=8 poll=50 f16 kv); ppl reference
+0cb4c2e	26.34	831.03	9.9	4.5839	discard	KV cache q8_0 — real -10% tg for only ~0.2GB VRAM; quality fine (+0.07%) but bad trade
+558b915	24.12	604.09	10.3	-	discard	flash attn off — real -17% tg / -27% pp; fa on strongly confirmed
+7a73e8b	7.70	628.08	9.8	-	discard	nkvo=1 (KV off GPU) — -74% tg, PCIe round-trips per step
+2455054	27.91	867.56	10.1	-	discard	poll=0 — tg tie within drift; pp +4.5% (not the objective)
+8f3f2d1	27.91	809.02	10.1	-	discard	threads 8->16 — tg tie within drift (neutral when fully offloaded)

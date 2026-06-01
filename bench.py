@@ -57,6 +57,9 @@ VRAM_BUDGET_GB = 11.0   # hard ceiling on the 12 GB card (headroom for desktop)
 PPL_CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "data", "wikitext-2-raw", "wiki.test.raw")
 PPL_NGL = 99            # offload for the perplexity pass (quality, not speed)
+PPL_CTX = 2048          # ppl context = our working depth, so KV-quant error is exercised
+PPL_CHUNKS = 20         # cap chunks for a fast gate (~40k tokens). We only need a
+                        # STABLE RELATIVE ppl (quant vs f16), not the full-corpus number.
 
 # Knob defaults = a sane incumbent baseline (full GPU offload + flash attention).
 # Establish the actual baseline numbers for the current model with `--baseline`.
@@ -167,6 +170,7 @@ def run_perplexity(cfg):
         return None
     cmd = [LLAMA_PPL, "-m", MODEL, "-f", PPL_CORPUS,
            "-ngl", str(PPL_NGL), "-fa", "on",
+           "-c", str(PPL_CTX), "--chunks", str(PPL_CHUNKS),
            "-ctk", cfg["ctk"], "-ctv", cfg["ctv"]]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
     ppl = None
