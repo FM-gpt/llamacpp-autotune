@@ -1,3 +1,2 @@
 config_id	tg_tok_s	pp_tok_s	vram_gb	ppl	status	description
-4f9a41c	106.53	3783.17	3.7	-	keep	baseline (ngl=99 fa=on b=2048 ub=512 t=8 poll=50 f16 kv)
-558b915	100.92	3553.96	3.7	-	discard	flash attn off — real ~5% tg regression (delta -5.6 > sigma 4.3)
+4f9a41c	29.17	830.29	10.1	-	keep	baseline Qwen2.5-14B Q4_K_M @ d=2048 (ngl=99 fa=on b=2048 ub=512 t=8 poll=50 f16 kv)

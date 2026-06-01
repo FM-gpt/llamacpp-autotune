@@ -42,13 +42,14 @@ import time
 CUDA_DIR    = r"D:\local\llamacpp-cuda"
 LLAMA_BENCH = os.path.join(CUDA_DIR, "llama-bench.exe")
 LLAMA_PPL   = os.path.join(CUDA_DIR, "llama-perplexity.exe")
-MODEL       = r"D:\local\models\Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+MODEL       = r"D:\local\models\Qwen2.5-14B-Instruct-Q4_K_M.gguf"
 
 # Representative workload, held constant across ALL experiments.
 N_PROMPT = 512     # prompt tokens (prompt-processing test)
 N_GEN    = 256     # generated tokens (generation test) <- objective lives here
-N_DEPTH  = 0       # tokens already in context before the test (0 = empty chat).
-                   # Bump to e.g. 2048 to model a loaded context; keep it FIXED.
+N_DEPTH  = 2048    # tokens already in context before the test (models a loaded
+                   # chat). Non-zero so KV-cache size / quant / VRAM budget matter
+                   # for the 14B. Keep it FIXED across experiments.
 REPS     = 5       # llama-bench repetitions -> gives mean +/- stddev
 
 # Constraints / gate.
@@ -57,8 +58,8 @@ PPL_CORPUS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                           "data", "wikitext-2-raw", "wiki.test.raw")
 PPL_NGL = 99            # offload for the perplexity pass (quality, not speed)
 
-# Knob defaults = the incumbent good baseline we already verified
-# (ngl=99, fa=on reproduces tg ~108-116, pp ~3.8-4.2k on the 3B Q4_K_M).
+# Knob defaults = a sane incumbent baseline (full GPU offload + flash attention).
+# Establish the actual baseline numbers for the current model with `--baseline`.
 DEFAULTS = {
     "ngl": "99", "fa": "on", "batch": "2048", "ubatch": "512",
     "threads": "8", "poll": "50", "ctk": "f16", "ctv": "f16",

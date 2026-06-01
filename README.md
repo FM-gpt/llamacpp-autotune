@@ -29,7 +29,7 @@ than the combined stddev** — single-shot wins are noise.
 ## Requirements
 
 - A CUDA-enabled llama.cpp build (this repo points at `D:\local\llamacpp-cuda`).
-- A local GGUF model (default: `Llama-3.2-3B-Instruct-Q4_K_M`).
+- A local GGUF model (default: `Qwen2.5-14B-Instruct-Q4_K_M` — big enough to make the VRAM/offload knobs matter on a 12 GB card).
 - Python 3.10+ and [uv](https://docs.astral.sh/uv/). `bench.py` is pure stdlib.
 
 ## Quick start (PowerShell)

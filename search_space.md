@@ -12,7 +12,7 @@ ctk=f16 ctv=f16 split_mode=layer mmap=1 nkvo=0`.
 
 | knob | flag | values to try | what it does / intuition |
 |---|---|---|---|
-| `ngl` | `-ngl` | 99 (all), 28, 20, 0 | GPU offload layers. 99 = whole 3B on the 3060 → should win big. Lower only to study the CPU-offload cliff. |
+| `ngl` | `-ngl` | 99 (all), 40, 24, 0 | GPU offload layers (Qwen2.5-14B has 48). 99 = all on the 3060; the 14B fits (~8.4 GB weights), but headroom is tighter, so this is now a real lever — lower values study the CPU-offload cliff. |
 | `fa` | `-fa` | on, off, auto | Flash attention. `on` is the expected winner here. |
 | `batch` | `-b` | 2048, 1024, 512, 4096 | Logical batch (prompt chunk). Mostly affects **pp**, little effect on **tg**. |
 | `ubatch` | `-ub` | 512, 256, 128, 1024 | Physical micro-batch fed to the GPU per pass. Bigger can raise pp until it saturates; watch VRAM. |
@@ -32,8 +32,9 @@ for prompt throughput, then the small/skeptical knobs (`poll`, `threads`, `nkvo`
 | `ctk` | `-ctk` | f16, q8_0, q4_0 | KV-cache **key** quantization. q8_0 ≈ halves KV VRAM, tiny quality cost. q4_0 saves more but watch ppl. |
 | `ctv` | `-ctv` | f16, q8_0, q4_0 | KV-cache **value** quantization. Generally pair with `-fa on`. |
 
-The 3B at d=0 barely uses KV, so the VRAM win is small *here*; the payoff shows at large
-context. Worth a couple of runs to confirm the gate works and the quality stays in budget.
+With the 14B at d=2048, KV is a real chunk of VRAM, so quantizing it gives a measurable
+win and may be what keeps a longer context within budget — while the quality gate guards
+against over-quantizing. This is one of the more interesting axes for this model.
 
 ## Tier 3 — later (needs the server harness, not llama-bench)
 
