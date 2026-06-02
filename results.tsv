@@ -9,3 +9,6 @@ config_id	tg_tok_s	pp_tok_s	vram_gb	ppl	status	description
 ee2fb7c	32.17	-	11.2	-	keep	spec draft 0.5B n_max=3 — +7% (51% accept); VRAM 11.2 over budget
 d2c5e86	37.32	-	11.2	-	keep	spec draft 0.5B n_max=8 — +24% over no-spec (30% accept, clock~1890), reproducible; BEST so far; VRAM 11.2 over 11GB budget
 76369ce	23.43	-	11.2	-	discard	spec n_max=16 — counterproductive (-22%): draft too long, rejected tokens waste compute
+da4ad45	35.41	-	11.2	-	keep	spec n_max=10 — +17%, near-second to n_max=8 (locked clock 1799)
+3e8acda	30.51	-	11.2	-	discard	n_max=8 p_min=0.9 — 97% accept but tg collapses to ~baseline; want max tokens/step not max accept
+a0f23f0	32.01	-	10.9	-	discard	n_max=8 Q4 draft — 32.0 vs Q8 35.7; Q4 draft loses accuracy (27% vs 30% accept), net slower
