@@ -6,6 +6,7 @@ __pycache__/
 # data corpora (fetched locally, large)
 data/
 
-# scratch
+# scratch / runtime logs (may contain local paths)
 run.log
+server.log
 *.tmp
