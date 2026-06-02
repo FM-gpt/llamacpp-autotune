@@ -1,22 +1,22 @@
-config_id	tg_tok_s	pp_tok_s	vram_gb	ppl	status	description
-4f9a41c	29.17	830.29	10.1	4.5807	keep	baseline Qwen2.5-14B Q4_K_M @ d=2048 (ngl=99 fa=on b=2048 ub=512 t=8 poll=50 f16 kv); ppl reference
-0cb4c2e	26.34	831.03	9.9	4.5839	discard	KV cache q8_0 — real -10% tg for only ~0.2GB VRAM; quality fine (+0.07%) but bad trade
-558b915	24.12	604.09	10.3	-	discard	flash attn off — real -17% tg / -27% pp; fa on strongly confirmed
-7a73e8b	7.70	628.08	9.8	-	discard	nkvo=1 (KV off GPU) — -74% tg, PCIe round-trips per step
-2455054	27.91	867.56	10.1	-	discard	poll=0 — tg tie within drift; pp +4.5% (not the objective)
-8f3f2d1	27.91	809.02	10.1	-	discard	threads 8->16 — tg tie within drift (neutral when fully offloaded)
-0f76ce9	30.03	-	10.3	-	keep	PHASE2 server no-spec baseline (clock 1811MHz; server path, short prompt)
-ee2fb7c	32.17	-	11.2	-	keep	spec draft 0.5B n_max=3 — +7% (51% accept); VRAM 11.2 over budget
-d2c5e86	37.32	-	11.2	-	keep	spec draft 0.5B n_max=8 — +24% over no-spec (30% accept, clock~1890), reproducible; BEST so far; VRAM 11.2 over 11GB budget
-76369ce	23.43	-	11.2	-	discard	spec n_max=16 — counterproductive (-22%): draft too long, rejected tokens waste compute
-da4ad45	35.41	-	11.2	-	keep	spec n_max=10 — +17%, near-second to n_max=8 (locked clock 1799)
-3e8acda	30.51	-	11.2	-	discard	n_max=8 p_min=0.9 — 97% accept but tg collapses to ~baseline; want max tokens/step not max accept
-a0f23f0	32.01	-	10.9	-	discard	n_max=8 Q4 draft — 32.0 vs Q8 35.7; Q4 draft loses accuracy (27% vs 30% accept), net slower
-0bba365	34.62	-	11.2	-	discard	n_max=8 p_min=0.3 — 34.6 < p_min=0 36.8 (clock 1799)
-1a35c9e	34.87	-	11.2	-	discard	n_max=8 p_min=0.6 — 34.9, 75% accept but still < p_min=0 (clock 1787)
-ca70f66	32.03	-	11.2	-	discard	spec n_max=4 — 32.0 but THROTTLED (clock 1778, power-cap); below n_max=8
-2423773	31.14	-	11.2	-	discard	spec n_max=12 — 31.1, declines past the n_max=8/10 peak (clock 1800)
-29eecab	29.06	-	11.2	-	discard	spec n_max=14 — 29.1, approaching no-spec; over-drafting (clock 1799)
-0f76ce9-t07	29.21	-	10.3	-	discard	no-spec temp=0.7 — = temp0 within noise (30.2); SAMPLING IS FREE for plain gen
-d2c5e86-t07	30.80	-	11.2	-	discard	spec n_max=8 temp=0.7 — accept 30%->24%, spec gain shrinks +20%->+5%; high temp hurts spec
-d2c5e86-t07mp1	31.51	-	11.2	-	discard	spec n_max=8 temp=0.7 min_p=0.1 — sharper dist partially recovers (24.3% accept), still < temp0
+config_id	tg_tok_s	pp_tok_s	vram_gb	clock_mhz	ppl	status	description
+4f9a41c	29.17	830.29	10.1	-	4.5807	keep	baseline: Qwen2.5-14B Q4_K_M ngl=99 fa=on b=2048 ub=512 t=8 poll=50 f16-kv @ d=2048; ppl reference (gate threshold 4.626)
+0cb4c2e	26.34	831.03	9.9	-	4.5839	discard	ctk/ctv=q8_0 — real -10% tg for ~0.2 GB VRAM saved; quality fine (ppl+0.07%) but bad speed trade
+558b915	24.12	604.09	10.3	-	-	discard	fa=off — real -17% tg / -27% pp; flash attention load-bearing
+7a73e8b	7.70	628.08	9.8	-	-	discard	nkvo=1 (KV cache off GPU) — -74% tg; PCIe round-trips per attention step
+2455054	27.91	867.56	10.1	-	-	discard	poll=0 — tg tie within drift; pp +4.5% (not the objective)
+8f3f2d1	27.91	809.02	10.1	-	-	discard	threads=16 — tg tie within drift; CPU threads neutral when fully GPU-offloaded
+0f76ce9	30.03	-	10.3	1811	-	keep	PHASE2 server baseline no spec [PRE-LOCK — clock 1811, not same basis as rows below]
+ee2fb7c	32.17	-	11.2	~1890	-	keep	spec n_max=3 — +7% (51% accept); VRAM over budget [PRE-LOCK]
+d2c5e86	37.32	-	11.2	~1890	-	keep	spec n_max=8 — +24% vs no-spec (30% accept) [PRE-LOCK; confirmed 36.8 at locked 1800]
+76369ce	23.43	-	11.2	1799	-	discard	spec n_max=16 — -22% vs no-spec; over-drafts, rejected tokens waste verify compute
+da4ad45	35.41	-	11.2	1799	-	keep	spec n_max=10 — +17%; close second to n_max=8
+0bba365	34.62	-	11.2	1799	-	discard	spec n_max=8 p_min=0.3 — 34.6 < p_min=0 (36.8); p_min=0 optimal
+1a35c9e	34.87	-	11.2	1787	-	discard	spec n_max=8 p_min=0.6 — 34.9, 75% accept but still slower; clock 1787 (light throttle)
+ca70f66	32.03	-	11.2	1778	-	discard	spec n_max=4 — 32.0; clock 1778 (throttled); directionally below n_max=8
+2423773	31.14	-	11.2	1800	-	discard	spec n_max=12 — 31.1; declining past n_max=8/10 peak
+29eecab	29.06	-	11.2	1799	-	discard	spec n_max=14 — 29.1; approaching no-spec baseline, over-drafting
+3e8acda	30.51	-	11.2	1797	-	discard	spec n_max=8 p_min=0.9 — 97% accept but tg collapses; want tokens/step not max accept rate
+a0f23f0	32.01	-	10.9	1800	-	discard	spec n_max=8 Q4_K_M draft — 32.0 vs Q8 35.7; draft accuracy matters more than draft speed at 0.5B
+0f76ce9-t07	29.21	-	10.3	1797	-	discard	no-spec temp=0.7 — equal to temp=0 (29.2 vs 30.2); sampling cost is negligible for plain gen
+d2c5e86-t07	30.80	-	11.2	1799	-	discard	spec n_max=8 temp=0.7 — accept 30%->24%; spec gain shrinks from +22% to +5% at higher temp
+d2c5e86-t07mp1	31.51	-	11.2	1800	-	discard	spec n_max=8 temp=0.7 min_p=0.1 — sharper dist partially recovers (24.3% accept); still below temp=0

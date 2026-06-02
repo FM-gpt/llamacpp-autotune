@@ -1,0 +1,39 @@
+# llamacpp-autotune configuration
+# Copy this file, fill in your paths, and run `python setup.py` to verify.
+# All paths can also be set via environment variables (env vars take precedence).
+
+[paths]
+# Directory containing llama-bench, llama-perplexity, llama-server (.exe on Windows).
+# Env: LLAMA_BIN_DIR
+llama_bin_dir = ""          # e.g. "/usr/local/bin" or "C:/llama.cpp/build/bin"
+
+# The GGUF model to benchmark.
+# Env: LLAMA_MODEL
+model = ""                  # e.g. "/models/Qwen2.5-14B-Instruct-Q4_K_M.gguf"
+
+# Draft model for speculative decoding (bench_server.py). Must share vocabulary
+# with the target model. Smaller/faster = better draft candidate.
+# Env: LLAMA_DRAFT_MODEL
+draft_model = ""            # e.g. "/models/Qwen2.5-0.5B-Instruct-Q8_0.gguf"
+
+[workload]
+# Fixed benchmark workload. DO NOT change mid-run -- numbers become incomparable.
+n_prompt = 512
+n_gen    = 256
+n_depth  = 2048   # pre-filled KV tokens (0 = empty context; >0 exercises KV-cache knobs)
+reps     = 5      # repetitions -> mean +/- stddev
+
+[constraints]
+vram_budget_gb = 11.0   # configs exceeding this are flagged as over-budget
+
+[perplexity]
+# Quality gate for lossy knobs (KV-cache quantization etc.).
+ppl_threshold_pct = 1.0   # reject if ppl degrades more than this % vs f16 baseline
+ppl_chunks        = 20    # cap for speed (~40k tokens); relative comparison only
+ppl_ctx           = 2048
+
+[server]
+# bench_server.py settings (speculative decoding harness).
+port       = 8081
+ctx        = 4096
+max_tokens = 256
