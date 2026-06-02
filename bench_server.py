@@ -68,14 +68,17 @@ def wait_health(timeout=240):
     return False
 
 
-def post_completion():
-    """One greedy generation; returns the server 'timings' dict."""
-    body = json.dumps({
+def post_completion(samplers):
+    """One generation with the given sampler settings; returns the 'timings' dict.
+    Sampling is applied AFTER the forward pass, so for plain decoding it doesn't move
+    tok/s - but it changes spec-decode ACCEPTANCE, which does move tok/s."""
+    payload = {
         "messages": [{"role": "user", "content": PROMPT}],
         "max_tokens": MAX_TOKENS,
-        "temperature": 0,
         "seed": 0,
-    }).encode()
+    }
+    payload.update(samplers)
+    body = json.dumps(payload).encode()
     req = urllib.request.Request(base_url() + "/v1/chat/completions", data=body,
                                  headers={"Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=600) as r:
@@ -112,6 +115,10 @@ def parse_args():
     ap.add_argument("--p-min", dest="p_min", default="0.0")
     ap.add_argument("--ngld", default="99")
     ap.add_argument("--reps", type=int, default=REPS)
+    ap.add_argument("--temp", default="0", help="sampling temperature (default 0=greedy)")
+    ap.add_argument("--top-k", dest="top_k", default=None)
+    ap.add_argument("--top-p", dest="top_p", default=None)
+    ap.add_argument("--min-p", dest="min_p", default=None)
     ap.add_argument("--desc", default="")
     return ap.parse_args()
 
@@ -121,8 +128,16 @@ def main():
     cfg = {"draft": args.draft, "n_max": args.n_max,
            "p_min": args.p_min, "ngld": args.ngld}
     spec = cfg["draft"] != "none"
-    label = (f"spec n_max={cfg['n_max']} p_min={cfg['p_min']} ngld={cfg['ngld']} "
-             f"draft={os.path.basename(cfg['draft'])}" if spec else "no-spec baseline")
+    samplers = {"temperature": float(args.temp)}
+    if args.top_k is not None: samplers["top_k"] = int(args.top_k)
+    if args.top_p is not None: samplers["top_p"] = float(args.top_p)
+    if args.min_p is not None: samplers["min_p"] = float(args.min_p)
+    smp = "temp=%s" % args.temp + "".join(
+        f" {k}={getattr(args, k)}" for k in ("top_k", "top_p", "min_p")
+        if getattr(args, k) is not None)
+    base = (f"spec n_max={cfg['n_max']} p_min={cfg['p_min']} "
+            f"draft={os.path.basename(cfg['draft'])}" if spec else "no-spec baseline")
+    label = f"{base} [{smp}]"
     cid = config_id(cfg)
 
     print(f"[server] launching: {label}", file=sys.stderr)
@@ -135,11 +150,11 @@ def main():
             proc.terminate()
             raise SystemExit("server did not become healthy - check server.log "
                              "(likely a bad flag or incompatible draft/target vocab).")
-        post_completion()  # warmup (discard)
+        post_completion(samplers)  # warmup (discard)
         sampler.start()
         tgs, acc_rate = [], None
         for i in range(args.reps):
-            timings, _ = post_completion()
+            timings, _ = post_completion(samplers)
             tgs.append(timings.get("predicted_per_second", 0.0))
             r, dn, da = acceptance(timings)
             if r is not None:
