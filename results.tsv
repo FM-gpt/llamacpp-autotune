@@ -12,3 +12,8 @@ d2c5e86	37.32	-	11.2	-	keep	spec draft 0.5B n_max=8 — +24% over no-spec (30% a
 da4ad45	35.41	-	11.2	-	keep	spec n_max=10 — +17%, near-second to n_max=8 (locked clock 1799)
 3e8acda	30.51	-	11.2	-	discard	n_max=8 p_min=0.9 — 97% accept but tg collapses to ~baseline; want max tokens/step not max accept
 a0f23f0	32.01	-	10.9	-	discard	n_max=8 Q4 draft — 32.0 vs Q8 35.7; Q4 draft loses accuracy (27% vs 30% accept), net slower
+0bba365	34.62	-	11.2	-	discard	n_max=8 p_min=0.3 — 34.6 < p_min=0 36.8 (clock 1799)
+1a35c9e	34.87	-	11.2	-	discard	n_max=8 p_min=0.6 — 34.9, 75% accept but still < p_min=0 (clock 1787)
+ca70f66	32.03	-	11.2	-	discard	spec n_max=4 — 32.0 but THROTTLED (clock 1778, power-cap); below n_max=8
+2423773	31.14	-	11.2	-	discard	spec n_max=12 — 31.1, declines past the n_max=8/10 peak (clock 1800)
+29eecab	29.06	-	11.2	-	discard	spec n_max=14 — 29.1, approaching no-spec; over-drafting (clock 1799)
