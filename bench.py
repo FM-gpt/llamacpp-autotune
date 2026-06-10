@@ -97,10 +97,10 @@ class VramSampler(threading.Thread):
         self.interval = interval
         self.peak = 0
         self.clocks = []
-        self._stop = threading.Event()
+        self._stop_event = threading.Event()
 
     def run(self):
-        while not self._stop.is_set():
+        while not self._stop_event.is_set():
             v, c = gpu_sample()
             if v is not None and v > self.peak:
                 self.peak = v
@@ -113,7 +113,7 @@ class VramSampler(threading.Thread):
         return round(sum(self.clocks) / len(self.clocks)) if self.clocks else None
 
     def stop(self):
-        self._stop.set()
+        self._stop_event.set()
 
 
 # -- benchmark runner ----------------------------------------------------------
