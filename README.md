@@ -45,6 +45,21 @@ This rule is the whole point. Without it, you're just chasing luck.
 
 ---
 
+## GRID / Hermes usage
+
+This fork is used in the GRID local-model setup process. For our workflow, do not run `setup.py`, `bench.py`, or `bench_server.py` directly unless debugging the harness. Use the report wrapper so every tuning run leaves a durable report:
+
+```bash
+python scripts/run_with_report.py setup
+python scripts/run_with_report.py bench -- --baseline
+python scripts/run_with_report.py bench -- --fa off --desc "flash attention off"
+python scripts/run_with_report.py server -- --draft none
+```
+
+Reports are written to `reports/` as Markdown plus JSON sidecars. See `docs/grid-integration.md` for CT128 paths, promotion checks, and the GRID controller handoff process.
+
+---
+
 ## Quick start
 
 **1. Configure**
